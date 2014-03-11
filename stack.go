@@ -1,3 +1,17 @@
+package handlebars
+
+//
+// This file was adapted from @hishboy's stack.go:
+//
+//   https://github.com/hishboy/gocommons/blob/master/lang/stack.go
+//
+// I changed the Stack to handle BlockNode pointers instead of empty interfaces,
+// so I don't have to cast them everywhere. Otherwise, it's identical.
+//
+
+
+
+
 //
 //  stack.go
 //
@@ -26,15 +40,12 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
 
-package stack
-
 import "sync"
 
 type stacknode struct {
-  data interface{}
+  node *BlockNode
   next *stacknode
 }
-
 
 type Stack struct {
   head *stacknode
@@ -55,11 +66,11 @@ func (s *Stack) Len() int {
   return s.count
 }
 
-func (s *Stack) Push(item interface{}) {
+func (s *Stack) Push(new_node *BlockNode) {
   s.lock.Lock()
   defer s.lock.Unlock()
 
-  n := &stacknode { data: item }
+  n := &stacknode { node: new_node }
 
   if s.head == nil {
     s.head = n
@@ -71,7 +82,7 @@ func (s *Stack) Push(item interface{}) {
   s.count++
 }
 
-func (s *Stack) Pop() interface{} {
+func (s *Stack) Pop() *BlockNode {
   s.lock.Lock()
   defer s.lock.Unlock()
 
@@ -86,18 +97,18 @@ func (s *Stack) Pop() interface{} {
     return nil
   }
 
-  return n.data
+  return n.node
 
 }
 
-func (s *Stack) Peek() interface{} {
+func (s *Stack) Peek() *BlockNode {
   s.lock.Lock()
   defer s.lock.Unlock()
 
   n := s.head
-  if n == nil || n.data == nil {
+  if n == nil || n.node == nil {
     return nil
   }
 
-  return n.data
+  return n.node
 }

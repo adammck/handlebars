@@ -18,7 +18,7 @@ package handlebars
       text := data[x:fpc]
       log("T", x, fpc);
 
-      node := stck.Peek().(*BlockNode)
+      node := stack.Peek()
       node.Append(TextNode(text))
 
       // ???
@@ -33,7 +33,7 @@ package handlebars
   action make_mustache {
     text := data[m:fpc]
     log("M", m, fpc);
-    node := stck.Peek().(*BlockNode)
+    node := stack.Peek()
     node.Append(MustacheNode{text})
   }
 
@@ -46,7 +46,7 @@ package handlebars
     text := data[m:fpc]
     log("#", m, fpc);
     child := BlockNode{text, make([]Node, 0)}
-    stck.Push(&child)
+    stack.Push(&child)
   }
 
 
@@ -56,8 +56,8 @@ package handlebars
 
   action make_block_close {
     log("/", m, fpc);
-    child := stck.Pop().(*BlockNode)
-    parent := stck.Peek().(*BlockNode)
+    child := stack.Pop()
+    parent := stack.Peek()
     parent.Append(*child)
   }
 
@@ -109,7 +109,6 @@ package handlebars
 import (
   "fmt"
   "strings"
-  "stack"
 )
 
 
@@ -147,7 +146,7 @@ type BlockNode struct {
   nodes []Node
 }
 
-func NewBlock(expr string) *BlockNode {
+func NewBlockNode(expr string) *BlockNode {
   return &BlockNode{expr, make([]Node, 0)}
 }
 
@@ -168,10 +167,10 @@ func log(label string, start int, end int) {
 
 func Compile(source string) *BlockNode {
   fmt.Printf("\n\nC%#v\n", source)
-  root := NewBlock("")
+  root := NewBlockNode("")
 
-  stck := stack.NewStack()
-  stck.Push(root)
+  stack := NewStack()
+  stack.Push(root)
 
   x := 0 // mark
   m := 0 // start of identifier
