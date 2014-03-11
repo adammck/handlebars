@@ -109,7 +109,7 @@ package handlebars
 import (
   "fmt"
   "strings"
-  "github.com/adammck/stack"
+  "stack"
 )
 
 
