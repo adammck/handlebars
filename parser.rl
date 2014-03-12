@@ -19,7 +19,7 @@ package handlebars
       log("T", x, fpc);
 
       node := stack.Peek()
-      node.Append(TextNode(text))
+      node.Append(NewTextNode(text))
 
       // ???
       x = fpc
