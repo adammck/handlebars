@@ -7,7 +7,7 @@ not even slightly. Go away!
 
 ## Development
 
-    ragel -Z handlebars.rl
+    ragel -Z parser.rl
     go test
 
 
