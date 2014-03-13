@@ -44,6 +44,15 @@ func (n MustacheNode) String() string {
   return "{{" + n.expr + "}}"
 }
 
+func (n MustacheNode) Execute(context interface{}) string {
+  val, ok := context.(map[string]string)[n.expr]
+  if ok {
+    return string(val)
+  } else {
+    return ""
+  }
+}
+
 
 
 
