@@ -3,6 +3,7 @@ package handlebars
 import (
   "fmt"
   "strings"
+  "bytes"
 )
 
 
@@ -10,6 +11,7 @@ import (
 
 type Node interface {
   String() string
+  Execute(interface{}) string
 }
 
 
@@ -27,6 +29,10 @@ func NewTextNode(str string) *TextNode {
 
 func (n *TextNode) String() string {
   return fmt.Sprintf("%#v", n.str)
+}
+
+func (n *TextNode) Execute(context interface{}) string {
+  return n.str
 }
 
 
@@ -78,4 +84,14 @@ func (n *BlockNode) String() string {
 
 func (n *BlockNode) Append(node Node) {
   n.nodes = append(n.nodes, node)
+}
+
+func (n *BlockNode) Execute(context interface{}) string {
+  var buffer bytes.Buffer
+
+  for i := range n.nodes {
+    buffer.WriteString(n.nodes[i].Execute(context))
+  }
+
+  return buffer.String()
 }
