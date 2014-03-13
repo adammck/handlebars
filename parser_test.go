@@ -1,11 +1,9 @@
 package handlebars
 
 import (
-	"testing"
 	"reflect"
+	"testing"
 )
-
-
 
 func example(t *testing.T, tmpl string, expected *BlockNode) {
 	actual := Compile(tmpl)
@@ -14,21 +12,20 @@ func example(t *testing.T, tmpl string, expected *BlockNode) {
 	}
 }
 
-
 func TestParseText(t *testing.T) {
-	tmpl     := "blah"
+	tmpl := "blah"
 	expected := &BlockNode{"", []Node{NewTextNode("blah")}}
 	example(t, tmpl, expected)
 }
 
 func TestParseMustache(t *testing.T) {
-	tmpl     := "{{hello}}"
+	tmpl := "{{hello}}"
 	expected := &BlockNode{"", []Node{&MustacheNode{"hello"}}}
 	example(t, tmpl, expected)
 }
 
 func TestParseMustacheWhitespace(t *testing.T) {
-	tmpl     := "{{ hello  }}"
+	tmpl := "{{ hello  }}"
 	expected := &BlockNode{"", []Node{&MustacheNode{"hello"}}}
 	example(t, tmpl, expected)
 }

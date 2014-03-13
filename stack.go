@@ -9,9 +9,6 @@ package handlebars
 // so I don't have to cast them everywhere. Otherwise, it's identical.
 //
 
-
-
-
 //
 //  stack.go
 //
@@ -43,72 +40,72 @@ package handlebars
 import "sync"
 
 type stacknode struct {
-  node *BlockNode
-  next *stacknode
+	node *BlockNode
+	next *stacknode
 }
 
 type Stack struct {
-  head *stacknode
-  count int
-  lock *sync.Mutex
+	head  *stacknode
+	count int
+	lock  *sync.Mutex
 }
 
 func NewStack() *Stack {
-  s := &Stack{}
-  s.lock = &sync.Mutex{}
-  return s
+	s := &Stack{}
+	s.lock = &sync.Mutex{}
+	return s
 }
 
 func (s *Stack) Len() int {
-  s.lock.Lock()
-  defer s.lock.Unlock()
+	s.lock.Lock()
+	defer s.lock.Unlock()
 
-  return s.count
+	return s.count
 }
 
 func (s *Stack) Push(new_node *BlockNode) {
-  s.lock.Lock()
-  defer s.lock.Unlock()
+	s.lock.Lock()
+	defer s.lock.Unlock()
 
-  n := &stacknode { node: new_node }
+	n := &stacknode{node: new_node}
 
-  if s.head == nil {
-    s.head = n
-  } else {
-    n.next = s.head
-    s.head = n
-  }
+	if s.head == nil {
+		s.head = n
+	} else {
+		n.next = s.head
+		s.head = n
+	}
 
-  s.count++
+	s.count++
 }
 
 func (s *Stack) Pop() *BlockNode {
-  s.lock.Lock()
-  defer s.lock.Unlock()
+	s.lock.Lock()
+	defer s.lock.Unlock()
 
-  var n *stacknode
-  if s.head != nil {
-    n = s.head
-    s.head = n.next
-    s.count--
-  }
+	var n *stacknode
+	if s.head != nil {
+		n = s.head
+		s.head = n.next
+		s.count--
+	}
 
-  if n == nil {
-    return nil
-  }
+	if n == nil {
+		return nil
+	}
 
-  return n.node
+	return n.node
 
 }
 
 func (s *Stack) Peek() *BlockNode {
-  s.lock.Lock()
-  defer s.lock.Unlock()
+	s.lock.Lock()
+	defer s.lock.Unlock()
 
-  n := s.head
-  if n == nil || n.node == nil {
-    return nil
-  }
+	n := s.head
+	if n == nil || n.node == nil {
+		return nil
+	}
 
-  return n.node
+	return n.node
 }
