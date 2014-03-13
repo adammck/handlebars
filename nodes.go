@@ -25,7 +25,7 @@ func NewTextNode(str string) *TextNode {
   return &TextNode{str}
 }
 
-func (n TextNode) String() string {
+func (n *TextNode) String() string {
   return fmt.Sprintf("%#v", n.str)
 }
 
@@ -40,11 +40,11 @@ func NewMustacheNode(expr string) *MustacheNode {
   return &MustacheNode{expr}
 }
 
-func (n MustacheNode) String() string {
+func (n *MustacheNode) String() string {
   return "{{" + n.expr + "}}"
 }
 
-func (n MustacheNode) Execute(context interface{}) string {
+func (n *MustacheNode) Execute(context interface{}) string {
   val, ok := context.(map[string]string)[n.expr]
   if ok {
     return string(val)
@@ -65,7 +65,7 @@ func NewBlockNode(expr string) *BlockNode {
   return &BlockNode{expr, make([]Node, 0)}
 }
 
-func (n BlockNode) String() string {
+func (n *BlockNode) String() string {
 
   // TODO: Surely there is a more succinct way of doing this.
   children := make([]string, len(n.nodes))

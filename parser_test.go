@@ -23,13 +23,13 @@ func TestParseText(t *testing.T) {
 
 func TestParseMustache(t *testing.T) {
 	tmpl     := "{{hello}}"
-	expected := &BlockNode{"", []Node{MustacheNode{"hello"}}}
+	expected := &BlockNode{"", []Node{&MustacheNode{"hello"}}}
 	example(t, tmpl, expected)
 }
 
 func TestParseMustacheWhitespace(t *testing.T) {
 	tmpl     := "{{ hello  }}"
-	expected := &BlockNode{"", []Node{MustacheNode{"hello"}}}
+	expected := &BlockNode{"", []Node{&MustacheNode{"hello"}}}
 	example(t, tmpl, expected)
 }
 
@@ -37,8 +37,8 @@ func TestSimpleParser(t *testing.T) {
 	tmpl := "abc{{alpha}}{{beta}}ghi"
 	expected := &BlockNode{"", []Node{
 		NewTextNode("abc"),
-		MustacheNode{"alpha"},
-		MustacheNode{"beta"},
+		&MustacheNode{"alpha"},
+		&MustacheNode{"beta"},
 		NewTextNode("ghi"),
 	}}
 
@@ -48,7 +48,7 @@ func TestSimpleParser(t *testing.T) {
 func TestSimpleBlockParser(t *testing.T) {
 	tmpl := "{{#list}}aaa{{/list}}"
 	expected := &BlockNode{"", []Node{
-		BlockNode{"list", []Node{
+		&BlockNode{"list", []Node{
 			NewTextNode("aaa"),
 		}},
 	}}
@@ -60,9 +60,9 @@ func TestNestedBlockParser(t *testing.T) {
 	tmpl := "aaa{{#alpha}}bbb{{#beta}}ccc{{/beta}}ddd{{/alpha}}eee"
 	expected := &BlockNode{"", []Node{
 		NewTextNode("aaa"),
-		BlockNode{"alpha", []Node{
+		&BlockNode{"alpha", []Node{
 			NewTextNode("bbb"),
-			BlockNode{"beta", []Node{
+			&BlockNode{"beta", []Node{
 				NewTextNode("ccc"),
 			}},
 			NewTextNode("ddd"),

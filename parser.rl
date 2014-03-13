@@ -34,7 +34,7 @@ package handlebars
     text := data[m:fpc]
     log("M", m, fpc);
     node := stack.Peek()
-    node.Append(MustacheNode{text})
+    node.Append(NewMustacheNode(text))
   }
 
 
@@ -45,8 +45,8 @@ package handlebars
   action make_block_open {
     text := data[m:fpc]
     log("#", m, fpc);
-    child := BlockNode{text, make([]Node, 0)}
-    stack.Push(&child)
+    child := NewBlockNode(text)
+    stack.Push(child)
   }
 
 
@@ -58,7 +58,7 @@ package handlebars
     log("/", m, fpc);
     child := stack.Pop()
     parent := stack.Peek()
-    parent.Append(*child)
+    parent.Append(child)
   }
 
 
