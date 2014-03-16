@@ -1,45 +1,46 @@
 package handlebars
 
 import (
-	"reflect"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
-
-func example(t *testing.T, tmpl string, expected *BlockNode) {
-	actual := Compile(tmpl)
-	if !reflect.DeepEqual(actual, expected) {
-		t.Errorf("got %#v, expected %#v", actual, expected)
-	}
-}
 
 func TestParseText(t *testing.T) {
 	tmpl := "blah"
 	expected := &BlockNode{"", []Node{NewTextNode("blah")}}
-	example(t, tmpl, expected)
+	assert.Equal(t, Compile(tmpl), expected)
 }
 
 func TestParseMustache(t *testing.T) {
 	tmpl := "{{hello}}"
-	expected := &BlockNode{"", []Node{&MustacheNode{"hello"}}}
-	example(t, tmpl, expected)
+	expected := &BlockNode{"", []Node{NewMustacheNode("hello")}}
+	assert.Equal(t, Compile(tmpl), expected)
 }
 
 func TestParseMustacheWhitespace(t *testing.T) {
 	tmpl := "{{ hello  }}"
-	expected := &BlockNode{"", []Node{&MustacheNode{"hello"}}}
-	example(t, tmpl, expected)
+	expected := &BlockNode{"", []Node{NewMustacheNode("hello")}}
+	assert.Equal(t, Compile(tmpl), expected)
+}
+
+func TestParseMustacheUnescaped(t *testing.T) {
+	n := NewMustacheNode("omg")
+
+	tmpl := "{{{omg}}}"
+	expected := &BlockNode{"", []Node{n}}
+	assert.Equal(t, Compile(tmpl), expected)
 }
 
 func TestSimpleParser(t *testing.T) {
 	tmpl := "abc{{alpha}}{{beta}}ghi"
 	expected := &BlockNode{"", []Node{
 		NewTextNode("abc"),
-		&MustacheNode{"alpha"},
-		&MustacheNode{"beta"},
+		NewMustacheNode("alpha"),
+		NewMustacheNode("beta"),
 		NewTextNode("ghi"),
 	}}
 
-	example(t, tmpl, expected)
+	assert.Equal(t, Compile(tmpl), expected)
 }
 
 func TestSimpleBlockParser(t *testing.T) {
@@ -50,7 +51,7 @@ func TestSimpleBlockParser(t *testing.T) {
 		}},
 	}}
 
-	example(t, tmpl, expected)
+	assert.Equal(t, Compile(tmpl), expected)
 }
 
 func TestNestedBlockParser(t *testing.T) {
@@ -67,5 +68,5 @@ func TestNestedBlockParser(t *testing.T) {
 		NewTextNode("eee"),
 	}}
 
-	example(t, tmpl, expected)
+	assert.Equal(t, Compile(tmpl), expected)
 }
