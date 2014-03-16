@@ -6,6 +6,8 @@ package handlebars
   open  = '{' :> '{';
   close = '}' :> '}';
 
+  unescaped_open  = open :> '{';
+  unescaped_close = close :> '}';
 
   # Note the current pointer position.
   action mark {
@@ -35,13 +37,8 @@ package handlebars
   }
 
 
-  action init_mustache {
-    m_esc = true
-  }
-
-  action set_unescaped {
-    m_esc = false
-  }
+  action set_escaped   { m_esc = true }
+  action set_unescaped { m_esc = false }
 
   action make_mustache {
     log("M")
@@ -49,14 +46,11 @@ package handlebars
     node.Append(NewMustacheNode(expr, m_esc))
   }
 
-
-
   action make_block_open {
     log("#")
     child := NewBlockNode(expr)
     stack.Push(child)
   }
-
 
   # TODO: Assert that the expr of the block we're closing is the same as the
   #       block we're popping off the stack. Currently we're not checking.
@@ -70,21 +64,28 @@ package handlebars
 
 
   action error {
+    log("!")
     panic(fmt.Sprintf("Error at: %d", fpc))
   }
 
+
   expr = (
-    space*                          # zero or more spaces
-    lower+  >start_expr %end_expr
-    space*                          # more optional spaces
+    space*
+    lower+ >start_expr %end_expr
+    space*
   );
 
+  unescaped_var = (
+    unescaped_open
+    expr >set_unescaped
+    unescaped_close >make_mustache %mark
+  ) >make_text;
+
   var = (
-    open >init_mustache
-    ('{' >set_unescaped | '')            # optional extra mustache to mark unescaped
-    expr                                 #
-    close >make_mustache %mark           # mark after close, since that's where the next text block starts
-  ) >make_text;                          # create text element from mark to start of var
+    open
+    expr >set_escaped
+    close >make_mustache %mark
+  ) >make_text; # create text element from mark to start of var
 
   block_open = (
     open
@@ -103,7 +104,8 @@ package handlebars
   text = (any+ -- open);
 
   statement = (
-    var
+    unescaped_var
+    | var
     | block_open
     | block_close
     | text

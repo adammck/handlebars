@@ -26,7 +26,7 @@ func TestParseMustacheWhitespace(t *testing.T) {
 func TestParseMustacheUnescaped(t *testing.T) {
 	n := NewMustacheNode("omg", false)
 
-	tmpl := "{{{ omg }}"
+	tmpl := "{{{ omg }}}"
 	expected := &BlockNode{"", []Node{n}}
 	assert.Equal(t, Compile(tmpl), expected)
 }
