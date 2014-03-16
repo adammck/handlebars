@@ -26,6 +26,18 @@ package handlebars
     }
   }
 
+
+
+  action start_expr {
+    m = fpc
+  }
+
+  action end_expr {
+    expr = data[m:fpc]
+    log("E", m, fpc);
+  }
+
+
   action init_mustache {
     m_esc = true
   }
@@ -34,34 +46,23 @@ package handlebars
     m_esc = false
   }
 
-  action start_mustache {
-    m = fpc
-  }
-
   action make_mustache {
-    text := data[m:fpc]
-    log("M", m, fpc);
     node := stack.Peek()
-    node.Append(NewMustacheNode(text, m_esc))
+    node.Append(NewMustacheNode(expr, m_esc))
+    log("M", m, m + len(expr));
   }
 
 
-  action start_block_open {
-    m = fpc
-  }
 
   action make_block_open {
-    text := data[m:fpc]
-    log("#", m, fpc);
-    child := NewBlockNode(text)
+    child := NewBlockNode(expr)
     stack.Push(child)
+    log("#", m, fpc);
   }
 
 
-  action start_block_close {
-    m = fpc
-  }
-
+  # TODO: Assert that the expr of the block we're closing is the same as the
+  #       block we're popping off the stack. Currently we're not checking.
   action make_block_close {
     log("/", m, fpc);
     child := stack.Pop()
@@ -75,31 +76,31 @@ package handlebars
     panic(fmt.Sprintf("Error at: %d", fpc))
   }
 
+  expr = (
+    space*                          # zero or more spaces
+    lower+  >start_expr %end_expr
+    space*                          # more optional spaces
+  );
+
   var = (
     open >init_mustache
-    ('{' >set_unescaped | '')             # optional extra mustache to mark unescaped
-    space*                                # zero or more spaces
-    lower+ >start_mustache %make_mustache #
-    space*                                # more optional spaces
-    close %mark                           # mark after close, since that's where the next text block starts
-  ) >make_text;                           # create text element from mark to start of var
+    ('{' >set_unescaped | '')            # optional extra mustache to mark unescaped
+    expr                                 #
+    close >make_mustache %mark           # mark after close, since that's where the next text block starts
+  ) >make_text;                          # create text element from mark to start of var
 
   block_open = (
     open
     '#'
-    space*
-    lower+ >start_block_open %make_block_open
-    space*
-    close %mark
+    expr
+    close >make_block_open %mark
   ) >make_text;
 
   block_close = (
     open
     '/'
-    space*
-    lower+ >start_block_close %make_block_close
-    space*
-    close %mark
+    expr
+    close >make_block_close %mark
   ) >make_text;
 
   text = (any+ -- open);
@@ -132,7 +133,8 @@ func Compile(source string) *BlockNode {
   stack.Push(root)
 
   x := 0 // mark
-  m := 0 // start of identifier
+  m := 0 // start of expr
+  expr := "" // last expression
 
   // current mustache properties
   // initialized in init_mustache
