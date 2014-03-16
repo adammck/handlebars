@@ -26,6 +26,14 @@ package handlebars
     }
   }
 
+  action init_mustache {
+    m_esc = true
+  }
+
+  action set_unescaped {
+    m_esc = false
+  }
+
   action start_mustache {
     m = fpc
   }
@@ -34,7 +42,7 @@ package handlebars
     text := data[m:fpc]
     log("M", m, fpc);
     node := stack.Peek()
-    node.Append(NewMustacheNode(text))
+    node.Append(NewMustacheNode(text, m_esc))
   }
 
 
@@ -64,11 +72,12 @@ package handlebars
 
 
   action error {
-    panic("Error at" + string(fpc))
+    panic(fmt.Sprintf("Error at: %d", fpc))
   }
 
   var = (
-    open
+    open >init_mustache
+    ('{' >set_unescaped | '')             # optional extra mustache to mark unescaped
     space*                                # zero or more spaces
     lower+ >start_mustache %make_mustache #
     space*                                # more optional spaces
@@ -125,6 +134,10 @@ func Compile(source string) *BlockNode {
   x := 0 // mark
   m := 0 // start of identifier
 
+  // current mustache properties
+  // initialized in init_mustache
+  var m_esc bool
+
   // Ragel vars
   cs   := 0           // Current state
   p    := 0           // Data pointer
@@ -138,5 +151,6 @@ func Compile(source string) *BlockNode {
   %% write exec;
   // ---------------------------------------------------------------------------
 
+  _ = m_esc
   return root
 }

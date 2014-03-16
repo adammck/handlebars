@@ -13,20 +13,20 @@ func TestParseText(t *testing.T) {
 
 func TestParseMustache(t *testing.T) {
 	tmpl := "{{hello}}"
-	expected := &BlockNode{"", []Node{NewMustacheNode("hello")}}
+	expected := &BlockNode{"", []Node{NewMustacheNode("hello", true)}}
 	assert.Equal(t, Compile(tmpl), expected)
 }
 
 func TestParseMustacheWhitespace(t *testing.T) {
 	tmpl := "{{ hello  }}"
-	expected := &BlockNode{"", []Node{NewMustacheNode("hello")}}
+	expected := &BlockNode{"", []Node{NewMustacheNode("hello", true)}}
 	assert.Equal(t, Compile(tmpl), expected)
 }
 
 func TestParseMustacheUnescaped(t *testing.T) {
-	n := NewMustacheNode("omg")
+	n := NewMustacheNode("omg", false)
 
-	tmpl := "{{{omg}}}"
+	tmpl := "{{{ omg }}"
 	expected := &BlockNode{"", []Node{n}}
 	assert.Equal(t, Compile(tmpl), expected)
 }
@@ -35,8 +35,8 @@ func TestSimpleParser(t *testing.T) {
 	tmpl := "abc{{alpha}}{{beta}}ghi"
 	expected := &BlockNode{"", []Node{
 		NewTextNode("abc"),
-		NewMustacheNode("alpha"),
-		NewMustacheNode("beta"),
+		NewMustacheNode("alpha", true),
+		NewMustacheNode("beta", true),
 		NewTextNode("ghi"),
 	}}
 

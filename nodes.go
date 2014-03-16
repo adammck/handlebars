@@ -30,11 +30,12 @@ func (n *TextNode) Execute(context interface{}) string {
 }
 
 type MustacheNode struct {
-	expr string
+	expr    string
+	escaped bool
 }
 
-func NewMustacheNode(expr string) *MustacheNode {
-	return &MustacheNode{expr}
+func NewMustacheNode(expr string, escaped bool) *MustacheNode {
+	return &MustacheNode{expr, escaped}
 }
 
 func (n *MustacheNode) String() string {
