@@ -16,8 +16,6 @@ package handlebars
   action make_text {
     if fpc > x {
       text := data[x:fpc]
-      log("T", x, fpc);
-
       node := stack.Peek()
       node.Append(NewTextNode(text))
 
@@ -34,7 +32,6 @@ package handlebars
 
   action end_expr {
     expr = data[m:fpc]
-    log("E", m, fpc);
   }
 
 
@@ -47,24 +44,24 @@ package handlebars
   }
 
   action make_mustache {
+    log("M")
     node := stack.Peek()
     node.Append(NewMustacheNode(expr, m_esc))
-    log("M", m, m + len(expr));
   }
 
 
 
   action make_block_open {
+    log("#")
     child := NewBlockNode(expr)
     stack.Push(child)
-    log("#", m, fpc);
   }
 
 
   # TODO: Assert that the expr of the block we're closing is the same as the
   #       block we're popping off the stack. Currently we're not checking.
   action make_block_close {
-    log("/", m, fpc);
+    log("/")
     child := stack.Pop()
     parent := stack.Peek()
     parent.Append(child)
@@ -121,14 +118,9 @@ import (
   "strings"
 )
 
-func log(label string, start int, end int) {
-  fmt.Printf(label + strings.Repeat(" ", start + 1) + strings.Repeat("─", (end - start)) + "\n")
-}
-
 func Compile(source string) *BlockNode {
-  fmt.Printf("\n\nC%#v\n", source)
+  fmt.Printf("\n\n %#v\n", source)
   root := NewBlockNode("")
-
   stack := NewStack()
   stack.Push(root)
 
@@ -146,6 +138,10 @@ func Compile(source string) *BlockNode {
   pe   := len(source) // Data end pointer
   eof  := pe          // End of file pointer
   data := source      // array containting the data to process
+
+  log := func(label string) {
+    fmt.Printf(label + strings.Repeat(" ", p) + "^\n")
+  }
 
   // -- BEGIN RAGEL GENERATED STUFF --------------------------------------------
   %% write data;
