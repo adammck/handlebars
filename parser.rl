@@ -71,7 +71,7 @@ package handlebars
 
   expr = (
     space*
-    lower+ >start_expr %end_expr
+    [a-z\.]+ >start_expr %end_expr
     space*
   );
 

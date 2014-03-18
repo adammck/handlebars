@@ -17,6 +17,12 @@ func TestParseMustache(t *testing.T) {
 	assert.Equal(t, Compile(tmpl), expected)
 }
 
+func TestParseMustacheNestedPath(t *testing.T) {
+	tmpl := "{{a.b.c}}"
+	expected := &BlockNode{"", []Node{NewMustacheNode("a.b.c", true)}}
+	assert.Equal(t, Compile(tmpl), expected)
+}
+
 func TestParseMustacheWhitespace(t *testing.T) {
 	tmpl := "{{ hello  }}"
 	expected := &BlockNode{"", []Node{NewMustacheNode("hello", true)}}
