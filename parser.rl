@@ -5,9 +5,10 @@ package handlebars
 
   open  = '{' :> '{';
   close = '}' :> '}';
+  unescapedOpen  = open :> '{';
+  unescapedClose = close :> '}';
 
-  unescaped_open  = open :> '{';
-  unescaped_close = close :> '}';
+  # ----------------------------------------------------------------------------
 
   # Note the current pointer position.
   action mark {
@@ -15,7 +16,7 @@ package handlebars
   }
 
   # Create a text node from MARK to FPC
-  action make_text {
+  action makeText {
     if fpc > x {
       text := data[x:fpc]
       node := stack.Peek()
@@ -27,26 +28,24 @@ package handlebars
   }
 
 
-
-  action start_expr {
+  action startExpr {
     m = fpc
   }
 
-  action end_expr {
+  action endExpr {
     expr = data[m:fpc]
   }
 
+  action setEscaped   { m_esc = true }
+  action setUnescaped { m_esc = false }
 
-  action set_escaped   { m_esc = true }
-  action set_unescaped { m_esc = false }
-
-  action make_mustache {
+  action makeMustache {
     log("M")
     node := stack.Peek()
     node.Append(NewMustacheNode(expr, m_esc))
   }
 
-  action make_block_open {
+  action makeBlockOpen {
     log("#")
     child := NewBlockNode(expr)
     stack.Push(child)
@@ -54,64 +53,63 @@ package handlebars
 
   # TODO: Assert that the expr of the block we're closing is the same as the
   #       block we're popping off the stack. Currently we're not checking.
-  action make_block_close {
+  action makeCloseBlock {
     log("/")
     child := stack.Pop()
     parent := stack.Peek()
     parent.Append(child)
   }
 
-
-
   action error {
     log("!")
     panic(fmt.Sprintf("Error at: %d", fpc))
   }
 
+  # ----------------------------------------------------------------------------
 
   expr = (
     space*
-    [a-z\.]+ >start_expr %end_expr
+    [a-z\.]+ >startExpr %endExpr
     space*
   );
 
-  unescaped_var = (
-    unescaped_open
-    expr >set_unescaped
-    unescaped_close >make_mustache %mark
-  ) >make_text;
+  unescapedVar = (
+    unescapedOpen
+    expr >setUnescaped
+    unescapedClose >makeMustache %mark
+  ) >makeText;
 
   var = (
     open
-    expr >set_escaped
-    close >make_mustache %mark
-  ) >make_text; # create text element from mark to start of var
+    expr >setEscaped
+    close >makeMustache %mark
+  ) >makeText; # create text element from mark to start of var
 
-  block_open = (
+  openBlock = (
     open
     '#'
     expr
-    close >make_block_open %mark
-  ) >make_text;
+    close >makeBlockOpen %mark
+  ) >makeText;
 
-  block_close = (
+  closeBlock = (
     open
     '/'
     expr
-    close >make_block_close %mark
-  ) >make_text;
+    close >makeCloseBlock %mark
+  ) >makeText;
 
   text = (any+ -- open);
 
   statement = (
-    unescaped_var
+    unescapedVar
     | var
-    | block_open
-    | block_close
+    | openBlock
+    | closeBlock
     | text
   );
 
-  main := statement* %eof(make_text) $err(error);
+  main := statement* %eof(makeText) $err(error);
 }%%
 
 

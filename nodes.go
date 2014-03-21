@@ -3,8 +3,8 @@ package handlebars
 import (
 	"bytes"
 	"fmt"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 type Node interface {
